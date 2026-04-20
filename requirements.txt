@@ -1,0 +1,15 @@
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
+
+# Step 2 — Face Detection
+opencv-python==4.10.0.84
+mtcnn>=1.0.0
+numpy
+tensorflow
+
+# Step 3 — Face Recognition
+deepface==0.0.93
+scikit-learn==1.5.2
+
+# Fix for TensorFlow + DeepFace compatibility
+tf-keraspytho
