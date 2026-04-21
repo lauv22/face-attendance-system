@@ -182,8 +182,12 @@ def get_today_attendance_route():
 @app.route('/delete_person', methods=['POST'])
 def delete_person():
     try:
-        data = request.get_json()
-        employee_id = data.get('employee_id')
+        # Support both JSON (fetch) and form data (HTML form)
+        if request.is_json:
+            employee_id = request.get_json().get('employee_id')
+        else:
+            employee_id = request.form.get('employee_id')
+
         if delete_person_by_employee_id(employee_id):
             return jsonify({"status": "success"})
         return jsonify({"status": "error", "message": "Person not found"})
