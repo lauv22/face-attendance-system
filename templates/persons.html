@@ -22,43 +22,14 @@
             <td>{{ p.department }}</td>
             <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             <td>
-                <button onclick="deletePerson('{{ p.employee_id }}', '{{ p.name|replace("'", "\\'") }}')" 
-                        class="btn btn-sm btn-danger">
-                    🗑 Delete
-                </button>
+                <form action="/delete_person" method="POST" style="display:inline;" 
+                      onsubmit="return confirm('Delete {{ p.name }} and all their data?')">
+                    <input type="hidden" name="employee_id" value="{{ p.employee_id }}">
+                    <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                </form>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% endblock %}
-
-<script>
-function deletePerson(employee_id, name) {
-    console.log("Delete clicked for:", employee_id, name);   // ← Debug log
-
-    if (confirm(`Delete ${name} and ALL their data permanently?`)) {
-        console.log("Sending delete request...");
-
-        fetch('/delete_person', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ employee_id: employee_id })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Response from server:", data);
-            if (data.status === "success") {
-                alert(`${name} deleted successfully!`);
-                location.reload();
-            } else {
-                alert("Failed: " + (data.message || "Unknown error"));
-            }
-        })
-        .catch(err => {
-            console.error("Error:", err);
-            alert("Network error. Check console (F12) for details.");
-        });
-    }
-}
-</script>
