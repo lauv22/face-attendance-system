@@ -2,7 +2,7 @@
 {% block title %}Registered Persons{% endblock %}
 
 {% block content %}
-<h2>👥 Registered Persons</h2>
+<h2 class="mb-4">👥 Registered Persons ({{ persons|length }})</h2>
 
 <table class="table table-hover">
     <thead class="table-light">
@@ -11,19 +11,20 @@
             <th>Employee ID</th>
             <th>Department</th>
             <th>Registered On</th>
-            <th>Action</th>
+            <th width="120px">Action</th>
         </tr>
     </thead>
     <tbody>
         {% for p in persons %}
         <tr>
             <td>{{ p.name }}</td>
-            <td>{{ p.employee_id }}</td>
+            <td><strong>{{ p.employee_id }}</strong></td>
             <td>{{ p.department }}</td>
-            <td>{{ p.created_at }}</td>
+            <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             <td>
-                <button onclick="deletePerson('{{ p.employee_id }}')" class="btn btn-sm btn-danger">
-                    Delete
+                <button onclick="deletePerson('{{ p.employee_id }}', '{{ p.name|replace("'", "\\'") }}')" 
+                        class="btn btn-sm btn-danger">
+                    🗑 Delete
                 </button>
             </td>
         </tr>
@@ -33,13 +34,31 @@
 {% endblock %}
 
 <script>
-function deletePerson(employee_id) {
-    if (confirm("Delete this person and all their data?")) {
+function deletePerson(employee_id, name) {
+    console.log("Delete clicked for:", employee_id, name);   // ← Debug log
+
+    if (confirm(`Delete ${name} and ALL their data permanently?`)) {
+        console.log("Sending delete request...");
+
         fetch('/delete_person', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({employee_id: employee_id})
-        }).then(() => location.reload());
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_id: employee_id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data);
+            if (data.status === "success") {
+                alert(`${name} deleted successfully!`);
+                location.reload();
+            } else {
+                alert("Failed: " + (data.message || "Unknown error"));
+            }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("Network error. Check console (F12) for details.");
+        });
     }
 }
 </script>
