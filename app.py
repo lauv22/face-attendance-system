@@ -1,14 +1,17 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import cv2
 import numpy as np
 import base64
+import pandas as pd
 from datetime import datetime, date
 from models.face_detector import FaceDetector
 from models.face_recognizer import recognizer
 from models.similarity import matcher
 from database.db_queries import (
     add_person, save_embedding, mark_attendance,
-    get_todays_attendance, log_event
+    get_todays_attendance, get_dashboard_stats,
+    get_all_persons, get_attendance_records,
+    delete_person_by_employee_id, log_event
 )
 from database.db_config import get_db_connection
 
@@ -18,9 +21,12 @@ detector = FaceDetector()
 TOTAL_PHOTOS = 20
 registration_buffer = {}
 
+# ====================== MAIN PAGES ======================
 @app.route('/')
 def index():
-    return "<h2>Welcome to Face Attendance System</h2><p><a href='/register'>→ Register New Person</a><br><a href='/attendance'>→ Live Attendance</a></p>"
+    stats = get_dashboard_stats()
+    recent = get_todays_attendance()[:5]  # last 5 records
+    return render_template('index.html', stats=stats, recent=recent)
 
 @app.route('/register')
 def register_page():
@@ -29,6 +35,16 @@ def register_page():
 @app.route('/attendance')
 def attendance_page():
     return render_template('attendance.html')
+
+@app.route('/persons')
+def persons_page():
+    persons = get_all_persons()
+    return render_template('persons.html', persons=persons)
+
+@app.route('/records')
+def records_page():
+    records = get_attendance_records()
+    return render_template('records.html', records=records)
 
 # ====================== REGISTRATION ======================
 @app.route('/register_capture', methods=['POST'])
@@ -40,7 +56,6 @@ def register_capture():
         employee_id = data['employee_id'].strip()
         department = data['department'].strip()
 
-        # Decode image
         img_bytes = base64.b64decode(image_base64)
         nparr = np.frombuffer(img_bytes, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -57,7 +72,6 @@ def register_capture():
         if embedding is None:
             return jsonify({"status": "error", "message": "Could not generate embedding"})
 
-        # Store in buffer
         if employee_id not in registration_buffer:
             registration_buffer[employee_id] = []
         registration_buffer[employee_id].append(embedding)
@@ -65,16 +79,11 @@ def register_capture():
         captured = len(registration_buffer[employee_id])
 
         if captured >= TOTAL_PHOTOS:
-            # Final step: average and save
             avg_embedding = recognizer.average_embeddings(registration_buffer[employee_id])
             person_id = add_person(name, employee_id, department)
             save_embedding(person_id, avg_embedding.tolist())
             del registration_buffer[employee_id]
-
-            return jsonify({
-                "status": "success",
-                "message": f"Registration completed with {TOTAL_PHOTOS} photos!"
-            })
+            return jsonify({"status": "success", "message": f"Registration completed with {TOTAL_PHOTOS} photos!"})
 
         return jsonify({"status": "success", "captured": captured})
 
@@ -98,11 +107,7 @@ def load_embeddings():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("""
-            SELECT p.id as person_id, e.embedding 
-            FROM persons p 
-            JOIN face_embeddings e ON p.id = e.person_id
-        """)
+        cur.execute("SELECT p.id as person_id, e.embedding FROM persons p JOIN face_embeddings e ON p.id = e.person_id")
         data = cur.fetchall()
         cur.close()
         conn.close()
@@ -170,11 +175,59 @@ def process_frame():
         return jsonify({"error": str(e)})
 
 @app.route('/get_today_attendance')
-def get_today_attendance():
+def get_today_attendance_route():
     return jsonify(get_todays_attendance())
 
+# ====================== DELETE PERSON ======================
+@app.route('/delete_person', methods=['POST'])
+def delete_person():
+    try:
+        data = request.get_json()
+        employee_id = data.get('employee_id')
+        if delete_person_by_employee_id(employee_id):
+            return jsonify({"status": "success"})
+        return jsonify({"status": "error", "message": "Person not found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+# ====================== EXPORT ======================
+@app.route('/export_csv')
+def export_csv():
+    records = get_attendance_records()
+    df = pd.DataFrame([{
+        'Name': r['name'],
+        'Employee ID': r['employee_id'],
+        'Department': r['department'],
+        'Date': r['date'],
+        'Time': r['time'],
+        'Status': r['status'],
+        'Confidence': r['confidence_score']
+    } for r in records])
+    
+    csv_path = "attendance_records.csv"
+    df.to_csv(csv_path, index=False)
+    return send_file(csv_path, as_attachment=True)
+
+@app.route('/export_excel')
+def export_excel():
+    records = get_attendance_records()
+    df = pd.DataFrame([{
+        'Name': r['name'],
+        'Employee ID': r['employee_id'],
+        'Department': r['department'],
+        'Date': r['date'],
+        'Time': r['time'],
+        'Status': r['status'],
+        'Confidence': r['confidence_score']
+    } for r in records])
+    
+    excel_path = "attendance_records.xlsx"
+    df.to_excel(excel_path, index=False)
+    return send_file(excel_path, as_attachment=True)
+
 if __name__ == '__main__':
-    print("🚀 Face Attendance System Started")
-    print("   Register   → http://127.0.0.1:5000/register")
-    print("   Attendance → http://127.0.0.1:5000/attendance")
+    print("🚀 Full Face Attendance System Started!")
+    print("   Dashboard     → http://127.0.0.1:5000/")
+    print("   Register      → http://127.0.0.1:5000/register")
+    print("   Live Attendance → http://127.0.0.1:5000/attendance")
     app.run(debug=True, port=5000)

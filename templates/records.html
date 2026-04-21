@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records{% endblock %}
+
+{% block content %}
+<h2>📋 Attendance Records</h2>
+
+<button onclick="window.location.href='/export_csv'" class="btn btn-success mb-3">
+    📥 Export to CSV
+</button>
+<button onclick="window.location.href='/export_excel'" class="btn btn-primary mb-3 ms-2">
+    📥 Export to Excel
+</button>
+
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Employee ID</th>
+            <th>Department</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Confidence</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.employee_id }}</td>
+            <td>{{ r.department }}</td>
+            <td>{{ r.date }}</td>
+            <td>{{ r.time }}</td>
+            <td><span class="badge bg-{{ 'success' if r.status=='Present' else 'warning' }}">{{ r.status }}</span></td>
+            <td>{{ r.confidence_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

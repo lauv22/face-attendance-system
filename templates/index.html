@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📊 Dashboard</h2>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5>Total Registered</h5>
+                <h2>{{ stats.total_registered }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Present Today</h5>
+                <h2>{{ stats.present_today }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5>Late Today</h5>
+                <h2>{{ stats.late_today }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5>Unknown Today</h5>
+                <h2>{{ stats.unknown_today }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mt-5">Recent Activity</h5>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Confidence</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in recent %}
+        <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.time }}</td>
+            <td><span class="badge bg-{{ 'success' if row.status=='Present' else 'warning' if row.status=='Late' else 'danger' }}">{{ row.status }}</span></td>
+            <td>{{ row.confidence_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

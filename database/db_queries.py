@@ -130,3 +130,77 @@ def delete_person_by_employee_id(employee_id: str) -> bool:
     finally:
         cur.close()
         conn.close()
+
+def get_dashboard_stats():
+    """Summary cards for home page."""
+    today = date.today()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        # Total registered
+        cur.execute("SELECT COUNT(*) as total FROM persons")
+        total_registered = cur.fetchone()['total']
+
+        # Today's stats
+        cur.execute("""
+            SELECT 
+                COUNT(CASE WHEN status = 'Present' THEN 1 END) as present,
+                COUNT(CASE WHEN status = 'Late' THEN 1 END) as late,
+                COUNT(CASE WHEN status = 'Unknown' THEN 1 END) as unknown
+            FROM attendance WHERE date = %s
+        """, (today,))
+        row = cur.fetchone()
+        return {
+            "total_registered": total_registered,
+            "present_today": row['present'] or 0,
+            "late_today": row['late'] or 0,
+            "unknown_today": row['unknown'] or 0
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+def get_all_persons():
+    """List of all registered persons for Persons page."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id, name, employee_id, department, created_at 
+            FROM persons 
+            ORDER BY created_at DESC
+        """)
+        return cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+
+def get_attendance_records(date_from=None, date_to=None, status=None):
+    """Full attendance records with optional filters."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        query = """
+            SELECT p.name, p.employee_id, p.department, 
+                   a.date, a.time, a.status, a.confidence_score, a.created_at
+            FROM attendance a
+            JOIN persons p ON a.person_id = p.id
+            WHERE 1=1
+        """
+        params = []
+        if date_from:
+            query += " AND a.date >= %s"
+            params.append(date_from)
+        if date_to:
+            query += " AND a.date <= %s"
+            params.append(date_to)
+        if status:
+            query += " AND a.status = %s"
+            params.append(status)
+        
+        query += " ORDER BY a.date DESC, a.time DESC"
+        cur.execute(query, params)
+        return cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()

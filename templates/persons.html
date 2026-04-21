@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Registered Persons{% endblock %}
+
+{% block content %}
+<h2>👥 Registered Persons</h2>
+
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Employee ID</th>
+            <th>Department</th>
+            <th>Registered On</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in persons %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.employee_id }}</td>
+            <td>{{ p.department }}</td>
+            <td>{{ p.created_at }}</td>
+            <td>
+                <button onclick="deletePerson('{{ p.employee_id }}')" class="btn btn-sm btn-danger">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+<script>
+function deletePerson(employee_id) {
+    if (confirm("Delete this person and all their data?")) {
+        fetch('/delete_person', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({employee_id: employee_id})
+        }).then(() => location.reload());
+    }
+}
+</script>
