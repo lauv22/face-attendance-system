@@ -3,28 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Face Attendance System{% endblock %}</title>
+    <title>{% block title %}FaceTrack{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary:       #6366f1;
+            --primary-dark:  #4f46e5;
+            --primary-light: #eef2ff;
+            --success:       #10b981;
+            --warning:       #f59e0b;
+            --danger:        #ef4444;
+            --surface:       #ffffff;
+            --surface-2:     #f8fafc;
+            --border:        #e2e8f0;
+            --text-1:        #0f172a;
+            --text-2:        #475569;
+            --text-3:        #94a3b8;
+            --radius:        12px;
+            --shadow:        0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md:     0 4px 16px rgba(0,0,0,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--surface-2);
+            color: var(--text-1);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .topnav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: 62px;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            margin-right: 40px;
+        }
+
+        .brand-logo {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 15px;
+        }
+
+        .brand-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-1);
+            letter-spacing: -.4px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-2);
+            color: var(--text-1);
+        }
+
+        .nav-link.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-link i { font-size: 13px; opacity: .8; }
+
+        .nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .clock-badge {
+            font-size: 12.5px;
+            color: var(--text-3);
+            font-weight: 500;
+            background: var(--surface-2);
+            padding: 5px 12px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+        }
+
+        .online-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--success);
+            background: #f0fdf4;
+            padding: 5px 12px;
+            border-radius: 99px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .online-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .3; }
+        }
+
+        /* ── Page ── */
+        .page-wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 28px;
+        }
+
+        /* ── Page Header ── */
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            color: var(--text-1);
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: var(--text-3);
+            margin-top: 4px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* ── Stat Cards ── */
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 80px; height: 80px;
+            border-radius: 0 12px 0 80px;
+            opacity: .07;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 19px;
+            margin-bottom: 16px;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-3);
+            font-weight: 500;
+        }
+
+        /* ── Table Card ── */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-card-head {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-1);
+        }
+
+        .table { margin: 0; }
+
+        .table thead th {
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            color: var(--text-3);
+            padding: 12px 20px;
+        }
+
+        .table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            color: var(--text-2);
+        }
+
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background: #fafbff; }
+
+        /* ── Status Badges ── */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 99px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .pill-green  { background: #f0fdf4; color: #15803d; }
+        .pill-yellow { background: #fffbeb; color: #b45309; }
+        .pill-red    { background: #fef2f2; color: #b91c1c; }
+        .pill-indigo { background: #eef2ff; color: #4338ca; }
+
+        /* ── Buttons ── */
+        .btn-primary-app {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            transition: all .15s;
+            font-family: inherit;
+        }
+
+        .btn-primary-app:hover {
+            background: var(--primary-dark);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99,102,241,.35);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            transition: all .15s;
+            font-family: inherit;
+        }
+
+        .btn-ghost:hover {
+            background: var(--surface-2);
+            color: var(--text-1);
+            border-color: var(--text-3);
+        }
+
+        .btn-danger-soft {
+            background: #fef2f2;
+            color: var(--danger);
+            border: none;
+            padding: 6px 13px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            font-family: inherit;
+        }
+
+        .btn-danger-soft:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ── Forms ── */
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            padding: 10px 14px;
+            width: 100%;
+            color: var(--text-1);
+            background: var(--surface);
+            font-family: inherit;
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        }
+
+        /* ── Avatar ── */
+        .avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ── Fade in ── */
+        .fade-up {
+            animation: fadeUp .35s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">👤 Face Attendance</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/">Dashboard</a>
-                <a class="nav-link" href="/register">Register</a>
-                <a class="nav-link" href="/attendance">Live Attendance</a>
-                <a class="nav-link" href="/persons">Registered Persons</a>
-                <a class="nav-link" href="/records">Attendance Records</a>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container mt-4">
-        {% block content %}{% endblock %}
+<!-- ── Top Navbar ── -->
+<nav class="topnav">
+    <a href="/" class="nav-brand">
+        <div class="brand-logo"><i class="fa-solid fa-user-check"></i></div>
+        <span class="brand-name">FaceTrack</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="/attendance" class="nav-link {% if request.path == '/attendance' %}active{% endif %}">
+            <i class="fa-solid fa-circle-dot"></i> Live Attendance
+        </a>
+        <a href="/register" class="nav-link {% if request.path == '/register' %}active{% endif %}">
+            <i class="fa-solid fa-user-plus"></i> Register
+        </a>
+        <a href="/persons" class="nav-link {% if request.path == '/persons' %}active{% endif %}">
+            <i class="fa-solid fa-users"></i> Persons
+        </a>
+        <a href="/records" class="nav-link {% if request.path == '/records' %}active{% endif %}">
+            <i class="fa-solid fa-table-list"></i> Records
+        </a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="nav-right">
+        <div class="clock-badge" id="liveClock"></div>
+        <div class="online-pill">
+            <div class="online-dot"></div> Online
+        </div>
+    </div>
+</nav>
+
+<!-- ── Content ── -->
+<div class="page-wrap fade-up">
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function tick() {
+        const now = new Date();
+        document.getElementById('liveClock').textContent =
+            now.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}) +
+            ' · ' + now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+    }
+    tick(); setInterval(tick, 1000);
+</script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
