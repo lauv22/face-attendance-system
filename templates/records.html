@@ -1,40 +1,100 @@
 {% extends "base.html" %}
-{% block title %}Attendance Records{% endblock %}
+{% block title %}Attendance Records — FaceTrack{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
 
 {% block content %}
-<h2>📋 Attendance Records</h2>
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div>
+        <h1>Attendance Records</h1>
+        <p>Full history of all attendance entries.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a href="/export_csv" class="btn-outline-custom">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+        </a>
+        <a href="/export_excel" class="btn-primary-custom">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </a>
+    </div>
+</div>
 
-<button onclick="window.location.href='/export_csv'" class="btn btn-success mb-3">
-    📥 Export to CSV
-</button>
-<button onclick="window.location.href='/export_excel'" class="btn btn-primary mb-3 ms-2">
-    📥 Export to Excel
-</button>
-
-<table class="table table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>Name</th>
-            <th>Employee ID</th>
-            <th>Department</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Status</th>
-            <th>Confidence</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for r in records %}
-        <tr>
-            <td>{{ r.name }}</td>
-            <td>{{ r.employee_id }}</td>
-            <td>{{ r.department }}</td>
-            <td>{{ r.date }}</td>
-            <td>{{ r.time }}</td>
-            <td><span class="badge bg-{{ 'success' if r.status=='Present' else 'warning' }}">{{ r.status }}</span></td>
-            <td>{{ r.confidence_score }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-card">
+    <div class="table-card-header">
+        <span class="table-card-title">
+            <i class="fa-solid fa-table-list me-2" style="color:var(--primary);"></i>
+            All Records
+        </span>
+        <span style="font-size:13px; color:var(--text-muted);">{{ records|length }} total entries</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Employee ID</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:9px;">
+                            <div style="width:30px;height:30px;border-radius:50%;
+                                        background:var(--primary-light);
+                                        display:flex;align-items:center;justify-content:center;
+                                        font-size:12px;font-weight:700;color:var(--primary);">
+                                {{ r.name[0].upper() }}
+                            </div>
+                            <span style="font-weight:500; font-size:14px;">{{ r.name }}</span>
+                        </div>
+                    </td>
+                    <td style="font-family:'DM Mono',monospace; font-size:13px; color:var(--text-secondary);">
+                        {{ r.employee_id }}
+                    </td>
+                    <td style="font-size:13px; color:var(--text-secondary);">{{ r.department }}</td>
+                    <td style="font-family:'DM Mono',monospace; font-size:13px;">{{ r.date }}</td>
+                    <td style="font-family:'DM Mono',monospace; font-size:13px; color:var(--text-secondary);">{{ r.time }}</td>
+                    <td>
+                        <span class="badge-status
+                            {% if r.status == 'Present' %}badge-present
+                            {% elif r.status == 'Late' %}badge-late
+                            {% else %}badge-unknown{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if r.confidence_score %}
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:50px; height:5px; background:var(--surface-3); border-radius:99px; overflow:hidden;">
+                                <div style="width:{{ (r.confidence_score * 100)|int }}%; height:100%;
+                                            background:{% if r.confidence_score > 0.85 %}var(--success){% elif r.confidence_score > 0.70 %}var(--warning){% else %}var(--danger){% endif %};
+                                            border-radius:99px;"></div>
+                            </div>
+                            <span style="font-size:12px; font-family:'DM Mono',monospace; color:var(--text-secondary);">
+                                {{ "%.0f"|format(r.confidence_score * 100) }}%
+                            </span>
+                        </div>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:60px; color:var(--text-muted);">
+                        <i class="fa-solid fa-table fa-3x mb-3 d-block" style="color:var(--border);"></i>
+                        <p style="font-size:15px; font-weight:500; margin-bottom:8px;">No attendance records yet</p>
+                        <a href="/attendance" class="btn-primary-custom" style="font-size:13px; padding:8px 16px;">
+                            <i class="fa-solid fa-circle-dot"></i> Start Live Attendance
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

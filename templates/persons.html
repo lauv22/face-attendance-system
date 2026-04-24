@@ -1,35 +1,85 @@
 {% extends "base.html" %}
-{% block title %}Registered Persons{% endblock %}
+{% block title %}Registered Persons — FaceTrack{% endblock %}
+{% block page_title %}Registered Persons{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">👥 Registered Persons ({{ persons|length }})</h2>
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between;">
+    <div>
+        <h1>Registered Persons</h1>
+        <p>{{ persons|length }} people enrolled in the system.</p>
+    </div>
+    <a href="/register" class="btn-primary-custom">
+        <i class="fa-solid fa-user-plus"></i> Register New
+    </a>
+</div>
 
-<table class="table table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>Name</th>
-            <th>Employee ID</th>
-            <th>Department</th>
-            <th>Registered On</th>
-            <th width="120px">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in persons %}
-        <tr>
-            <td>{{ p.name }}</td>
-            <td><strong>{{ p.employee_id }}</strong></td>
-            <td>{{ p.department }}</td>
-            <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>
-                <form action="/delete_person" method="POST" style="display:inline;" 
-                      onsubmit="return confirm('Delete {{ p.name }} and all their data?')">
-                    <input type="hidden" name="employee_id" value="{{ p.employee_id }}">
-                    <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-card">
+    <div class="table-card-header">
+        <span class="table-card-title">
+            <i class="fa-solid fa-users me-2" style="color:var(--primary);"></i>
+            All Enrolled Persons
+        </span>
+        <span style="font-size:13px; color:var(--text-muted);">
+            {{ persons|length }} total
+        </span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Person</th>
+                <th>Employee ID</th>
+                <th>Department</th>
+                <th>Registered On</th>
+                <th style="text-align:right;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in persons %}
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px;height:36px;border-radius:50%;
+                                    background:var(--primary-light);
+                                    display:flex;align-items:center;justify-content:center;
+                                    font-size:14px;font-weight:700;color:var(--primary);flex-shrink:0;">
+                            {{ p.name[0].upper() }}
+                        </div>
+                        <span style="font-weight:500;">{{ p.name }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-family:'DM Mono',monospace; font-size:13px;
+                                 background:var(--surface-2); padding:3px 8px;
+                                 border-radius:5px; border:1px solid var(--border);">
+                        {{ p.employee_id }}
+                    </span>
+                </td>
+                <td style="color:var(--text-secondary); font-size:14px;">{{ p.department }}</td>
+                <td style="font-size:13px; color:var(--text-muted); font-family:'DM Mono',monospace;">
+                    {{ p.created_at.strftime('%Y-%m-%d') }}
+                </td>
+                <td style="text-align:right;">
+                    <form action="/delete_person" method="POST" style="display:inline;"
+                          onsubmit="return confirm('Delete {{ p.name }} and all their data? This cannot be undone.')">
+                        <input type="hidden" name="employee_id" value="{{ p.employee_id }}">
+                        <button type="submit" class="btn-danger-custom">
+                            <i class="fa-solid fa-trash-can me-1"></i> Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align:center; padding:60px; color:var(--text-muted);">
+                    <i class="fa-solid fa-users-slash fa-3x mb-3 d-block" style="color:var(--border);"></i>
+                    <p style="font-size:15px; font-weight:500; margin-bottom:8px;">No persons registered yet</p>
+                    <a href="/register" class="btn-primary-custom" style="font-size:13px; padding:8px 16px;">
+                        <i class="fa-solid fa-user-plus"></i> Register First Person
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
