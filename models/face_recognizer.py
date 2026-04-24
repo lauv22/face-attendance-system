@@ -1,3 +1,4 @@
+import cv2                    # ← ADD THIS LINE
 import numpy as np
 from deepface import DeepFace
 from typing import List, Optional
