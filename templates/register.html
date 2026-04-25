@@ -1,41 +1,76 @@
 {% extends "base.html" %}
-{% block title %}Register Person — FaceTrack{% endblock %}
-{% block page_title %}Register New Person{% endblock %}
+{% block title %}Register — FaceTrack{% endblock %}
 
 {% block extra_css %}
 <style>
-    .video-frame {
-        border: 2px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        background: #0f1523;
-        position: relative;
+    .register-wrap {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 16px;
+        height: calc(100vh - 130px);
     }
-    .video-frame video {
+    .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 22px;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .camera-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .camera-default {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-3);
+        gap: 10px;
+    }
+    .video-wrap {
+        flex: 1;
+        background: #0f172a;
+        position: relative;
+        overflow: hidden;
+    }
+    .video-wrap video {
         width: 100%;
+        height: 100%;
+        object-fit: cover;
         display: block;
     }
-    .video-overlay {
+    .rec-badge {
         position: absolute;
-        top: 12px; left: 12px;
-        background: rgba(0,0,0,.55);
+        top:10px; left:10px;
+        background: rgba(0,0,0,.6);
         backdrop-filter: blur(6px);
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 12px;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11px;
         color: white;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
     }
-    .rec-dot {
-        width: 8px; height: 8px;
-        border-radius: 50%;
-        background: #ef4444;
-        animation: pulse 1s infinite;
+    .rec-dot { width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .progress-foot {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-2);
     }
     .progress-track {
-        height: 8px;
+        height: 6px;
         background: var(--surface-3);
         border-radius: 99px;
         overflow: hidden;
@@ -43,141 +78,127 @@
     }
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
+        background: var(--primary);
         border-radius: 99px;
         transition: width .3s ease;
         width: 0%;
+    }
+    .success-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        text-align: center;
+        gap: 12px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header" style="margin-bottom:14px;">
     <h1>Register New Person</h1>
-    <p>Fill in the details and capture face photos to enroll someone in the system.</p>
+    <p>Fill in the details and capture face photos to enroll.</p>
 </div>
 
-<div class="row g-4">
+<div class="register-wrap">
 
     <!-- Left: Form -->
-    <div class="col-lg-5">
-        <div class="card p-4">
-            <h6 style="font-weight:600; margin-bottom:20px; color:var(--text-secondary); text-transform:uppercase; font-size:11px; letter-spacing:.6px;">
-                Person Details
-            </h6>
+    <div class="form-card">
+        <h6 style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;">
+            Person Details
+        </h6>
 
-            <form id="registerForm">
-                <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" id="name" class="form-control" placeholder="e.g. John Doe" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Employee ID</label>
-                    <input type="text" id="employee_id" class="form-control" placeholder="e.g. EMP001" required>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Department</label>
-                    <input type="text" id="department" class="form-control" placeholder="e.g. Engineering" required>
-                </div>
+        <form id="registerForm">
+            <div style="margin-bottom:14px;">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="name" class="form-control" placeholder="e.g. John Doe" required>
+            </div>
+            <div style="margin-bottom:14px;">
+                <label class="form-label">Employee ID</label>
+                <input type="text" id="employee_id" class="form-control" placeholder="e.g. EMP001" required>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label class="form-label">Department</label>
+                <input type="text" id="department" class="form-control" placeholder="e.g. Engineering" required>
+            </div>
 
-                <button type="submit" id="startBtn" class="btn-primary-custom w-100" style="justify-content:center; padding:12px;">
-                    <i class="fa-solid fa-camera"></i>
-                    Start Face Capture
-                </button>
-            </form>
+            <button type="submit" id="startBtn" class="btn-primary-app w-100" style="justify-content:center;padding:11px;">
+                <i class="fa-solid fa-camera"></i> Start Face Capture
+            </button>
+        </form>
+
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+            <p style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px;">Instructions</p>
+            <ul style="font-size:12px;color:var(--text-3);padding-left:16px;line-height:2.1;">
+                <li>Fill all fields before starting</li>
+                <li>Look directly at the camera</li>
+                <li>Ensure good lighting</li>
+                <li>Stay still during capture</li>
+                <li>20 photos captured automatically</li>
+            </ul>
         </div>
 
-        <!-- Instructions -->
-        <div class="card p-4 mt-3">
-            <h6 style="font-weight:600; margin-bottom:14px; font-size:13px;">📋 Instructions</h6>
-            <ul style="font-size:13px; color:var(--text-secondary); padding-left:18px; line-height:2;">
-                <li>Fill in all fields before starting</li>
-                <li>Look directly at the camera</li>
-                <li>Ensure good lighting on your face</li>
-                <li>Stay still during capture</li>
-                <li>20 photos will be taken automatically</li>
-            </ul>
+        <div id="errorMessage" class="d-none" style="margin-top:14px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;color:#b91c1c;">
+            <i class="fa-solid fa-circle-exclamation me-1"></i>
+            <span id="errorText"></span>
         </div>
     </div>
 
-    <!-- Right: Webcam -->
-    <div class="col-lg-7">
-        <div class="card p-4">
-            <!-- Default state -->
-            <div id="defaultState" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
-                <i class="fa-solid fa-camera fa-3x mb-3 d-block" style="color:var(--border);"></i>
-                <p style="font-size:15px; font-weight:500;">Camera will appear here</p>
-                <p style="font-size:13px;">Fill in the form and click Start Face Capture</p>
-            </div>
+    <!-- Right: Camera -->
+    <div class="camera-card">
 
-            <!-- Webcam section (hidden initially) -->
-            <div id="webcamSection" class="d-none">
-                <div class="video-frame mb-3">
-                    <video id="video" autoplay playsinline></video>
-                    <div class="video-overlay">
-                        <div class="rec-dot"></div>
-                        <span>CAPTURING</span>
-                    </div>
-                </div>
+        <!-- Default empty state -->
+        <div class="camera-default" id="defaultState">
+            <i class="fa-solid fa-camera" style="font-size:32px;color:var(--border);"></i>
+            <p style="font-size:14px;font-weight:500;">Camera will appear here</p>
+            <p style="font-size:13px;">Fill the form and click Start</p>
+        </div>
 
-                <!-- Progress -->
-                <div style="margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">Capture Progress</span>
-                        <span id="progressText" style="font-size:13px; font-family:'DM Mono',monospace; color:var(--primary);">0 / 20</span>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                </div>
-
-                <p id="statusMsg" style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:12px;">
-                    <i class="fa-solid fa-circle-info me-1"></i>
-                    Keep your face steady and look at the camera...
-                </p>
-
-                <button id="cancelBtn" class="btn-danger-custom w-100" style="padding:10px;">
-                    <i class="fa-solid fa-xmark me-1"></i> Cancel Registration
-                </button>
-            </div>
-
-            <!-- Success -->
-            <div id="successMessage" class="d-none" style="text-align:center; padding:40px 20px;">
-                <div style="width:64px;height:64px;border-radius:50%;background:#f0fdf4;
-                            display:flex;align-items:center;justify-content:center;
-                            margin:0 auto 16px; font-size:28px;">
-                    ✅
-                </div>
-                <h5 style="font-weight:700; margin-bottom:6px;">Registration Complete!</h5>
-                <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">
-                    Face data has been saved successfully.
-                </p>
-                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                    <a href="/persons" class="btn-primary-custom">
-                        <i class="fa-solid fa-users"></i> View All Persons
-                    </a>
-                    <a href="/register" class="btn-outline-custom">
-                        <i class="fa-solid fa-plus"></i> Register Another
-                    </a>
-                </div>
-            </div>
-
-            <!-- Error -->
-            <div id="errorMessage" class="d-none alert-custom alert-danger-custom mt-3">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span id="errorText"></span>
+        <!-- Webcam active -->
+        <div class="video-wrap d-none" id="videoWrap">
+            <video id="video" autoplay playsinline></video>
+            <div class="rec-badge">
+                <div class="rec-dot"></div> CAPTURING
             </div>
         </div>
+
+        <!-- Progress footer -->
+        <div class="progress-foot d-none" id="progressFoot">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;font-weight:600;color:var(--text-2);" id="statusMsg">
+                    Keep your face steady...
+                </span>
+                <span style="font-size:12px;font-family:monospace;color:var(--primary);" id="progressText">0 / 20</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <button id="cancelBtn" class="btn-danger-soft w-100 mt-2" style="padding:7px;">
+                <i class="fa-solid fa-xmark me-1"></i> Cancel
+            </button>
+        </div>
+
+        <!-- Success state -->
+        <div class="success-state d-none" id="successState">
+            <div style="width:56px;height:56px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:24px;">✅</div>
+            <h5 style="font-weight:700;margin:0;">Registration Complete!</h5>
+            <p style="font-size:13px;color:var(--text-3);margin:0;">Face data saved successfully.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+                <a href="/persons" class="btn-primary-app"><i class="fa-solid fa-users"></i> View Persons</a>
+                <a href="/register" class="btn-ghost"><i class="fa-solid fa-plus"></i> Register Another</a>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    let stream = null;
-    let capturing = false;
-    let currentEmployeeId = null;
-    const TOTAL_PHOTOS = 20;
+    let stream=null, capturing=false, currentEmployeeId=null;
+    const TOTAL=20;
     const video = document.getElementById('video');
 
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -185,31 +206,29 @@
         const name        = document.getElementById('name').value.trim();
         const employee_id = document.getElementById('employee_id').value.trim();
         const department  = document.getElementById('department').value.trim();
-        if (!name || !employee_id || !department) { alert("Please fill in all fields"); return; }
-
+        if(!name||!employee_id||!department) { alert("Please fill in all fields"); return; }
         currentEmployeeId = employee_id;
-
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user" } });
             video.srcObject = stream;
             document.getElementById('defaultState').classList.add('d-none');
-            document.getElementById('webcamSection').classList.remove('d-none');
+            document.getElementById('videoWrap').classList.remove('d-none');
+            document.getElementById('progressFoot').classList.remove('d-none');
             document.getElementById('errorMessage').classList.add('d-none');
             document.getElementById('startBtn').disabled = true;
             capturing = true;
             captureLoop(name, employee_id, department);
-        } catch (err) {
+        } catch(err) {
             showError("Cannot access webcam. Please allow camera permission.");
         }
     });
 
     document.getElementById('cancelBtn').addEventListener('click', async function() {
-        if (confirm("Cancel registration? All progress will be lost.")) {
+        if(confirm("Cancel registration? All progress will be lost.")) {
             capturing = false;
             stopWebcam();
             await fetch('/cancel_registration', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method:'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ employee_id: currentEmployeeId })
             });
             location.reload();
@@ -218,50 +237,45 @@
 
     async function captureLoop(name, employee_id, department) {
         let captured = 0;
-        while (capturing && captured < TOTAL_PHOTOS) {
+        while(capturing && captured < TOTAL) {
             await new Promise(r => setTimeout(r, 200));
             const canvas = document.createElement('canvas');
-            canvas.width = 640; canvas.height = 480;
-            canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
-            const base64 = canvas.toDataURL('image/jpeg', 0.85);
+            canvas.width=640; canvas.height=480;
+            canvas.getContext('2d').drawImage(video,0,0,640,480);
             let data;
             try {
                 const res = await fetch('/register_capture', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: base64, name, employee_id, department })
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ image:canvas.toDataURL('image/jpeg',.85), name, employee_id, department })
                 });
                 data = await res.json();
-            } catch (err) {
-                showError("Network error. Please try again."); stopWebcam(); return;
-            }
+            } catch(err) { showError("Network error."); stopWebcam(); return; }
 
-            if (data.status === 'success') {
+            if(data.status==='success') {
                 stopWebcam();
-                document.getElementById('webcamSection').classList.add('d-none');
-                document.getElementById('successMessage').classList.remove('d-none');
+                document.getElementById('videoWrap').classList.add('d-none');
+                document.getElementById('progressFoot').classList.add('d-none');
+                document.getElementById('successState').classList.remove('d-none');
                 return;
             }
-            if (data.status === 'error') { showError(data.message); stopWebcam(); return; }
-            if (data.status === 'no_face') {
-                document.getElementById('statusMsg').innerHTML =
-                    '<i class="fa-solid fa-triangle-exclamation me-1" style="color:#d97706;"></i>No face detected — please face the camera!';
+            if(data.status==='error')   { showError(data.message); stopWebcam(); return; }
+            if(data.status==='no_face') {
+                document.getElementById('statusMsg').textContent = '⚠️ No face detected — face the camera!';
                 continue;
             }
-            if (data.status === 'capturing') {
+            if(data.status==='capturing') {
                 captured = data.captured;
-                const pct = Math.round((captured / TOTAL_PHOTOS) * 100);
-                document.getElementById('progressFill').style.width = pct + '%';
-                document.getElementById('progressText').textContent = captured + ' / ' + TOTAL_PHOTOS;
-                document.getElementById('statusMsg').innerHTML =
-                    '<i class="fa-solid fa-camera me-1"></i>Capturing... ' + captured + ' of ' + TOTAL_PHOTOS + ' photos done';
+                const pct = Math.round((captured/TOTAL)*100);
+                document.getElementById('progressFill').style.width = pct+'%';
+                document.getElementById('progressText').textContent = captured+' / '+TOTAL;
+                document.getElementById('statusMsg').textContent = 'Capturing... '+captured+' of '+TOTAL+' done';
             }
         }
     }
 
     function stopWebcam() {
         capturing = false;
-        if (stream) { stream.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+        if(stream) { stream.getTracks().forEach(t=>t.stop()); video.srcObject=null; }
     }
 
     function showError(msg) {

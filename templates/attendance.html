@@ -1,169 +1,210 @@
 {% extends "base.html" %}
 {% block title %}Live Attendance — FaceTrack{% endblock %}
-{% block page_title %}Live Attendance{% endblock %}
 
 {% block extra_css %}
 <style>
-    .video-frame {
-        border: 2px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        background: #0f1523;
-        position: relative;
+    .session-wrap {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 16px;
+        height: calc(100vh - 130px);
     }
-    .video-frame video { width: 100%; display: block; }
+    .video-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .video-card-top {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .video-frame {
+        flex: 1;
+        background: #0f172a;
+        position: relative;
+        overflow: hidden;
+    }
+    .video-frame video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
     .video-badge {
         position: absolute;
-        top: 12px; left: 12px;
+        top: 10px; left: 10px;
         background: rgba(0,0,0,.6);
         backdrop-filter: blur(6px);
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 12px;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11px;
         color: white;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
     }
-    .live-dot {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: #ef4444;
-        animation: pulse 1s infinite;
+    .live-dot  { width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1s infinite; }
+    .idle-dot  { width:7px;height:7px;border-radius:50%;background:#6b7280; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .stats-bar {
+        padding: 10px 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: var(--surface-2);
     }
-    .idle-dot {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: #6b7280;
+    .stat-mini { text-align: center; }
+    .stat-mini-val { font-size: 18px; font-weight: 800; line-height:1; }
+    .stat-mini-label { font-size: 10px; color: var(--text-3); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+
+    /* Log panel */
+    .log-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .log-card-head {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
     }
     .log-scroll {
-        max-height: 460px;
+        flex: 1;
         overflow-y: auto;
     }
     .log-row {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 16px;
+        padding: 10px 14px;
         border-bottom: 1px solid var(--border);
         animation: fadeIn .3s ease;
     }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
     .log-row:last-child { border-bottom: none; }
     .log-avatar {
-        width: 32px; height: 32px;
+        width: 30px; height: 30px;
         border-radius: 50%;
         background: var(--primary-light);
         color: var(--primary);
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 12px; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
-    .log-name { font-size: 14px; font-weight: 600; }
-    .log-time { font-size: 12px; color: var(--text-muted); font-family:'DM Mono',monospace; }
-    .log-conf { font-size: 11px; color: var(--text-muted); margin-left:auto; font-family:'DM Mono',monospace; }
+    .log-name  { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .log-time  { font-size: 11px; color: var(--text-3); }
+    .log-conf  { font-size: 11px; color: var(--text-3); margin-left: auto; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Live Attendance Session</h1>
-    <p>Start the session to begin recognizing faces and marking attendance automatically.</p>
+<div class="page-header" style="margin-bottom:14px;">
+    <h1>Live Attendance</h1>
+    <p>Start the session to recognize faces and mark attendance automatically.</p>
 </div>
 
-<div class="row g-4">
+<div class="session-wrap">
 
-    <!-- Camera Feed -->
-    <div class="col-lg-7">
-        <div class="card p-4">
-            <!-- Controls -->
-            <div style="display:flex; gap:10px; margin-bottom:16px;">
-                <button id="startBtn" class="btn-primary-custom">
-                    <i class="fa-solid fa-circle-play"></i> Start Session
-                </button>
-                <button id="stopBtn" class="btn-outline-custom d-none">
-                    <i class="fa-solid fa-circle-stop"></i> Stop Session
-                </button>
+    <!-- Left: Camera -->
+    <div class="video-card">
+        <div class="video-card-top">
+            <button id="startBtn" class="btn-primary-app" style="padding:7px 16px; font-size:13px;">
+                <i class="fa-solid fa-circle-play"></i> Start Session
+            </button>
+            <button id="stopBtn" class="btn-ghost d-none" style="padding:7px 16px; font-size:13px;">
+                <i class="fa-solid fa-circle-stop"></i> Stop
+            </button>
+        </div>
+
+        <div class="video-frame">
+            <video id="video" autoplay playsinline></video>
+            <div class="video-badge">
+                <div class="idle-dot" id="statusDot"></div>
+                <span id="sessionLabel">Session Stopped</span>
             </div>
+        </div>
 
-            <!-- Video -->
-            <div class="video-frame">
-                <video id="video" autoplay playsinline></video>
-                <div class="video-badge" id="liveBadge">
-                    <div class="idle-dot" id="statusDot"></div>
-                    <span id="sessionLabel">Session Stopped</span>
-                </div>
+        <div class="stats-bar">
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="countRecognized" style="color:var(--primary);">0</div>
+                <div class="stat-mini-label">Recognized</div>
             </div>
-
-            <!-- Stats bar -->
-            <div style="display:flex; gap:20px; margin-top:16px; padding:14px;
-                        background:var(--surface-2); border-radius:var(--radius);">
-                <div style="text-align:center;">
-                    <div style="font-size:20px; font-weight:700; color:var(--primary);" id="countRecognized">0</div>
-                    <div style="font-size:11px; color:var(--text-muted);">Recognized</div>
-                </div>
-                <div style="width:1px; background:var(--border);"></div>
-                <div style="text-align:center;">
-                    <div style="font-size:20px; font-weight:700; color:var(--success);" id="countMarked">0</div>
-                    <div style="font-size:11px; color:var(--text-muted);">Marked</div>
-                </div>
-                <div style="width:1px; background:var(--border);"></div>
-                <div style="text-align:center;">
-                    <div style="font-size:20px; font-weight:700; color:var(--warning);" id="countUnknown">0</div>
-                    <div style="font-size:11px; color:var(--text-muted);">Unknown</div>
-                </div>
-                <div style="margin-left:auto; font-size:12px; color:var(--text-muted); align-self:center;">
-                    <i class="fa-solid fa-circle-info me-1"></i> Processes every 300ms
-                </div>
+            <div style="width:1px;background:var(--border);height:28px;"></div>
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="countMarked" style="color:var(--success);">0</div>
+                <div class="stat-mini-label">Marked</div>
+            </div>
+            <div style="width:1px;background:var(--border);height:28px;"></div>
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="countUnknown" style="color:var(--warning);">0</div>
+                <div class="stat-mini-label">Unknown</div>
+            </div>
+            <div style="margin-left:auto;font-size:12px;color:var(--text-3);">
+                <i class="fa-solid fa-circle-info me-1"></i> Every 300ms
             </div>
         </div>
     </div>
 
-    <!-- Attendance Log -->
-    <div class="col-lg-5">
-        <div class="table-card" style="height:100%;">
-            <div class="table-card-header">
-                <span class="table-card-title">
-                    <i class="fa-solid fa-list-check me-2" style="color:var(--primary);"></i>
-                    Today's Log
-                </span>
-                <span id="logCount" style="font-size:12px; color:var(--text-muted);">0 entries</span>
-            </div>
-            <div class="log-scroll" id="logContainer">
-                <div id="emptyLog" style="text-align:center; padding:50px 20px; color:var(--text-muted);">
-                    <i class="fa-solid fa-radar fa-2x mb-2 d-block"></i>
-                    <p style="font-size:13px;">Start session to see live entries</p>
-                </div>
+    <!-- Right: Log -->
+    <div class="log-card">
+        <div class="log-card-head">
+            <span style="font-size:14px;font-weight:700;">
+                <i class="fa-solid fa-list-check me-1" style="color:var(--primary);"></i>
+                Today's Log
+            </span>
+            <span id="logCount" style="font-size:12px;color:var(--text-3);">0 entries</span>
+        </div>
+        <div class="log-scroll" id="logContainer">
+            <div id="emptyLog" style="text-align:center;padding:40px 20px;color:var(--text-3);">
+                <i class="fa-solid fa-radar fa-2x d-block mb-2"></i>
+                <p style="font-size:13px;">Start session to see entries</p>
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    let stream = null, intervalId = null;
-    let countRecognized = 0, countMarked = 0, countUnknown = 0, totalEntries = 0;
+    let stream=null, intervalId=null;
+    let countR=0, countM=0, countU=0, total=0;
     const video = document.getElementById('video');
 
     document.getElementById('startBtn').addEventListener('click', async () => {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user" } });
             video.srcObject = stream;
             document.getElementById('startBtn').classList.add('d-none');
             document.getElementById('stopBtn').classList.remove('d-none');
             document.getElementById('statusDot').className = 'live-dot';
             document.getElementById('sessionLabel').textContent = 'LIVE';
             document.getElementById('emptyLog').style.display = 'none';
-
-            await fetch('/load_embeddings', { method: 'POST' });
+            await fetch('/load_embeddings', { method:'POST' });
             intervalId = setInterval(processFrame, 300);
-        } catch (err) {
+        } catch(err) {
             alert("Cannot access webcam. Please allow camera permission.");
         }
     });
 
     document.getElementById('stopBtn').addEventListener('click', () => {
         clearInterval(intervalId);
-        if (stream) { stream.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+        if(stream) { stream.getTracks().forEach(t=>t.stop()); video.srcObject=null; }
         document.getElementById('startBtn').classList.remove('d-none');
         document.getElementById('stopBtn').classList.add('d-none');
         document.getElementById('statusDot').className = 'idle-dot';
@@ -171,53 +212,43 @@
     });
 
     async function processFrame() {
-        if (!video.videoWidth) return;
+        if(!video.videoWidth) return;
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL('image/jpeg', 0.8);
-
         const res = await fetch('/process_frame', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64 })
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ image: canvas.toDataURL('image/jpeg', 0.8) })
         });
         const data = await res.json();
-        if (data.detections) updateLog(data.detections);
+        if(data.detections) updateLog(data.detections);
     }
 
     function updateLog(detections) {
         detections.forEach(det => {
-            if (det.name !== "Unknown") {
-                countRecognized++;
-                if (det.status !== "Already Marked") countMarked++;
-            } else {
-                countUnknown++;
-            }
-            document.getElementById('countRecognized').textContent = countRecognized;
-            document.getElementById('countMarked').textContent = countMarked;
-            document.getElementById('countUnknown').textContent = countUnknown;
-
-            if (det.name === "Unknown" || det.status === "Already Marked") return;
-
-            totalEntries++;
-            document.getElementById('logCount').textContent = totalEntries + ' entries';
-
+            if(det.name !== "Unknown") { countR++; if(det.status !== "Already Marked") countM++; }
+            else countU++;
+            document.getElementById('countRecognized').textContent = countR;
+            document.getElementById('countMarked').textContent = countM;
+            document.getElementById('countUnknown').textContent = countU;
+            if(det.name === "Unknown" || det.status === "Already Marked") return;
+            total++;
+            document.getElementById('logCount').textContent = total + ' entries';
             const row = document.createElement('div');
             row.className = 'log-row';
-            const statusClass = det.status === 'Present' ? 'badge-present' : det.status === 'Late' ? 'badge-late' : 'badge-unknown';
+            const sc = det.status==='Present' ? 'pill-green' : det.status==='Late' ? 'pill-yellow' : 'pill-red';
             row.innerHTML = `
                 <div class="log-avatar">${det.name[0].toUpperCase()}</div>
                 <div>
                     <div class="log-name">${det.name}</div>
-                    <div class="log-time">${new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+                    <div class="log-time">${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
                 </div>
-                <span class="badge-status ${statusClass}" style="margin-left:auto;">${det.status}</span>
+                <span class="pill ${sc}" style="margin-left:auto;">${det.status}</span>
                 <span class="log-conf">${(det.confidence*100).toFixed(1)}%</span>
             `;
-            const container = document.getElementById('logContainer');
-            container.insertBefore(row, container.firstChild);
-            if (container.children.length > 20) container.removeChild(container.lastChild);
+            const c = document.getElementById('logContainer');
+            c.insertBefore(row, c.firstChild);
+            if(c.children.length > 20) c.removeChild(c.lastChild);
         });
     }
 </script>

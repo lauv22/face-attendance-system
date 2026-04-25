@@ -7,41 +7,40 @@
     <p>Live overview of today's attendance.</p>
 </div>
 
-<!-- Stat Cards -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-xl-3">
         <div class="stat-card">
-            <div class="stat-icon" style="background:#eef2ff;">
-                <i class="fa-solid fa-users" style="color:#6366f1;"></i>
+            <div class="stat-icon">
+                <i class="fa-solid fa-users" style="color:#38bdf8;"></i>
             </div>
-            <div class="stat-value">{{ stats.total_registered }}</div>
+            <div class="stat-value" style="color:#f1f5f9;">{{ stats.total_registered }}</div>
             <div class="stat-label">Total Registered</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
-            <div class="stat-icon" style="background:#f0fdf4;">
-                <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+            <div class="stat-icon">
+                <i class="fa-solid fa-circle-check" style="color:#34d399;"></i>
             </div>
-            <div class="stat-value" style="color:#10b981;">{{ stats.present_today }}</div>
+            <div class="stat-value" style="color:#34d399;">{{ stats.present_today }}</div>
             <div class="stat-label">Present Today</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
-            <div class="stat-icon" style="background:#fffbeb;">
-                <i class="fa-solid fa-clock" style="color:#f59e0b;"></i>
+            <div class="stat-icon">
+                <i class="fa-solid fa-clock" style="color:#fbbf24;"></i>
             </div>
-            <div class="stat-value" style="color:#f59e0b;">{{ stats.late_today }}</div>
+            <div class="stat-value" style="color:#fbbf24;">{{ stats.late_today }}</div>
             <div class="stat-label">Late Today</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
-            <div class="stat-icon" style="background:#fef2f2;">
-                <i class="fa-solid fa-user-slash" style="color:#ef4444;"></i>
+            <div class="stat-icon">
+                <i class="fa-solid fa-user-slash" style="color:#f87171;"></i>
             </div>
-            <div class="stat-value" style="color:#ef4444;">
+            <div class="stat-value" style="color:#f87171;">
                 {{ stats.total_registered - stats.present_today - stats.late_today }}
             </div>
             <div class="stat-label">Absent Today</div>
@@ -49,11 +48,10 @@
     </div>
 </div>
 
-<!-- Recent Activity Table -->
 <div class="table-card">
     <div class="table-card-head">
         <span class="table-card-title">
-            <i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--primary);"></i>
+            <i class="fa-solid fa-clock-rotate-left me-2" style="color:#38bdf8;"></i>
             Recent Activity
         </span>
         <a href="/records" class="btn-ghost" style="font-size:13px; padding:6px 14px;">
@@ -75,22 +73,25 @@
                 <td>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div class="avatar">{{ row.name[0].upper() }}</div>
-                        <span style="font-weight:600; color:var(--text-1);">{{ row.name }}</span>
+                        <span style="font-weight:600; color:#f1f5f9;">{{ row.name }}</span>
                     </div>
                 </td>
-                <td style="font-size:13px; color:var(--text-3);">{{ row.time }}</td>
+                <td style="font-size:13px; color:#475569;">{{ row.time }}</td>
                 <td>
-                    <span class="pill {% if row.status=='Present' %}pill-green{% elif row.status=='Late' %}pill-yellow{% else %}pill-red{% endif %}">
+                    <span class="pill
+                        {% if row.status=='Present' %}pill-green
+                        {% elif row.status=='Late' %}pill-yellow
+                        {% else %}pill-red{% endif %}">
                         {{ row.status }}
                     </span>
                 </td>
-                <td style="font-size:13px; color:var(--text-3);">
+                <td style="font-size:13px; color:#475569;">
                     {% if row.confidence_score %}{{ "%.1f"|format(row.confidence_score*100) }}%{% else %}—{% endif %}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" style="text-align:center; padding:50px; color:var(--text-3);">
+                <td colspan="4" style="text-align:center; padding:50px; color:#475569;">
                     <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
                     No attendance records yet today
                 </td>
