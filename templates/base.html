@@ -9,31 +9,31 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary:       #111111;
-            --primary-hover: #333333;
-            --accent:        #111111;
-            --success:       #16a34a;
-            --warning:       #d97706;
-            --danger:        #dc2626;
-            --surface:       #ffffff;
-            --surface-2:     #fafafa;
-            --surface-3:     #f4f4f5;
-            --border:        #e4e4e7;
-            --border-dark:   #d1d1d6;
-            --text-1:        #111111;
-            --text-2:        #52525b;
-            --text-3:        #a1a1aa;
-            --radius:        10px;
-            --radius-lg:     14px;
-            --shadow:        0 1px 2px rgba(0,0,0,.05);
-            --shadow-md:     0 4px 12px rgba(0,0,0,.08);
+            --primary:        #111111;
+            --primary-dark:   #333333;
+            --primary-light:  #f4f4f5;
+            --success:        #16a34a;
+            --warning:        #d97706;
+            --danger:         #dc2626;
+            --surface:        #ffffff;
+            --surface-2:      #fafafa;
+            --surface-3:      #f4f4f5;
+            --border:         #e4e4e7;
+            --border-2:       #d1d1d6;
+            --text-1:         #111111;
+            --text-2:         #374151;
+            --text-3:         #6b7280;
+            --radius:         10px;
+            --radius-lg:      14px;
+            --shadow:         0 1px 3px rgba(0,0,0,.06);
+            --shadow-md:      0 4px 16px rgba(0,0,0,.10);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--surface-2);
+            background: #f8fafc;
             color: var(--text-1);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
@@ -66,7 +66,7 @@
             background: var(--primary);
             border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 14px;
+            color: #ffffff; font-size: 14px;
         }
 
         .brand-name {
@@ -79,7 +79,7 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1px;
+            gap: 2px;
             flex: 1;
         }
 
@@ -103,8 +103,8 @@
         }
 
         .nav-link.active {
-            background: var(--primary);
-            color: white;
+            background: #111111;
+            color: #ffffff;
         }
 
         .nav-link i { font-size: 12px; }
@@ -120,11 +120,10 @@
             font-size: 12px;
             color: var(--text-3);
             font-weight: 500;
-            background: var(--surface-3);
+            background: var(--surface-2);
             padding: 5px 11px;
             border-radius: 99px;
             border: 1px solid var(--border);
-            letter-spacing: .1px;
         }
 
         .online-pill {
@@ -149,7 +148,7 @@
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: .3; }
+            50%       { opacity: .3; }
         }
 
         /* ── Page ── */
@@ -188,9 +187,9 @@
         }
 
         .stat-card:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            border-color: var(--border-dark);
+            border-color: var(--border-2);
         }
 
         .stat-icon {
@@ -200,7 +199,6 @@
             font-size: 16px;
             margin-bottom: 14px;
             background: var(--surface-3);
-            color: var(--text-1);
         }
 
         .stat-value {
@@ -213,11 +211,11 @@
         }
 
         .stat-label {
-            font-size: 12.5px;
+            font-size: 12px;
             color: var(--text-3);
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: .4px;
+            letter-spacing: .5px;
         }
 
         /* ── Table Card ── */
@@ -262,10 +260,11 @@
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
             color: var(--text-2);
+            background: transparent;
         }
 
         .table tbody tr:last-child td { border-bottom: none; }
-        .table tbody tr:hover { background: var(--surface-2); }
+        .table tbody tr:hover td { background: var(--surface-2); }
 
         /* ── Status Pills ── */
         .pill {
@@ -275,7 +274,6 @@
             border-radius: 99px;
             font-size: 11.5px;
             font-weight: 600;
-            letter-spacing: .1px;
         }
 
         .pill-green  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
@@ -286,7 +284,7 @@
         /* ── Buttons ── */
         .btn-primary-app {
             background: var(--primary);
-            color: white;
+            color: #ffffff;
             border: none;
             padding: 9px 18px;
             border-radius: 8px;
@@ -299,12 +297,11 @@
             text-decoration: none;
             transition: all .15s;
             font-family: inherit;
-            letter-spacing: -.1px;
         }
 
         .btn-primary-app:hover {
-            background: var(--primary-hover);
-            color: white;
+            background: var(--primary-dark);
+            color: #ffffff;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,.15);
         }
@@ -329,12 +326,12 @@
         .btn-ghost:hover {
             background: var(--surface-3);
             color: var(--text-1);
-            border-color: var(--border-dark);
+            border-color: var(--border-2);
         }
 
         .btn-danger-soft {
             background: #fef2f2;
-            color: var(--danger);
+            color: #dc2626;
             border: 1px solid #fecaca;
             padding: 6px 13px;
             border-radius: 7px;
@@ -346,9 +343,9 @@
         }
 
         .btn-danger-soft:hover {
-            background: var(--danger);
-            color: white;
-            border-color: var(--danger);
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
         }
 
         /* ── Forms ── */
@@ -401,13 +398,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* ── Divider ── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 20px 0;
-        }
-
         /* ── Fade in ── */
         .fade-up {
             animation: fadeUp .3s ease both;
@@ -420,7 +410,7 @@
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
