@@ -10,3 +10,4 @@ tf-keras
 flask
 pandas
 openpyxl
+#docker-compose up

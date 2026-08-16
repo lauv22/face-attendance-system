@@ -244,3 +244,16 @@ def get_person_by_id(person_id: int):
     finally:
         cur.close()
         conn.close()
+def get_person_by_employee_id(employee_id: str):
+    """Check if employee ID already exists."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id, name, employee_id, department
+            FROM persons WHERE employee_id = %s
+        """, (employee_id.strip(),))
+        return cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()

@@ -16,7 +16,8 @@ from database.db_queries import (
     get_todays_attendance, get_dashboard_stats,
     get_all_persons, get_attendance_records,
     delete_person_by_employee_id, log_event,
-    get_all_embeddings, get_person_by_id
+    get_all_embeddings, get_person_by_id,
+    get_person_by_employee_id
 )
 
 app = Flask(__name__)
@@ -25,7 +26,7 @@ detector = FaceDetector()
 TOTAL_PHOTOS = 20
 registration_buffer = {}
 
-# ====================== PAGES ======================
+# ====================== MAIN PAGES ======================
 @app.route('/')
 def index():
     stats = get_dashboard_stats()
@@ -60,6 +61,15 @@ def register_capture():
         employee_id = data['employee_id'].strip()
         department = data['department'].strip()
 
+        # ── Check duplicate Employee ID before anything ──
+        if employee_id not in registration_buffer:
+            existing_person = get_person_by_employee_id(employee_id)
+            if existing_person:
+                return jsonify({
+                    "status": "error",
+                    "message": f"Employee ID '{employee_id}' is already registered!"
+                })
+
         img_bytes = base64.b64decode(image_base64)
         nparr = np.frombuffer(img_bytes, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -76,26 +86,48 @@ def register_capture():
         if embedding is None:
             return jsonify({"status": "error", "message": "Could not generate embedding"})
 
+        # ── Face duplicate check (only on first photo) ──
         if employee_id not in registration_buffer:
+            existing_embeddings = get_all_embeddings()
+            if existing_embeddings:
+                matcher.load_embeddings_from_db(existing_embeddings)
+                person_id, score = matcher.find_match(embedding, threshold=0.65)
+                if person_id:
+                    existing = get_person_by_id(person_id)
+                    name_found = existing['name'] if existing else 'someone'
+                    return jsonify({
+                        "status": "error",
+                        "message": f"This face is already registered as '{name_found}'! Duplicate not allowed."
+                    })
             registration_buffer[employee_id] = []
-        registration_buffer[employee_id].append(embedding)
 
+        registration_buffer[employee_id].append(embedding)
         captured = len(registration_buffer[employee_id])
 
         if captured >= TOTAL_PHOTOS:
-            avg_embedding = recognizer.average_embeddings(registration_buffer[employee_id])
+            avg_embedding = recognizer.average_embeddings(
+                registration_buffer[employee_id]
+            )
             person_id = add_person(name, employee_id, department)
             save_embedding(person_id, avg_embedding.tolist())
             del registration_buffer[employee_id]
             log_event("REGISTRATION", f"Completed: {name} ({employee_id})")
-            return jsonify({"status": "success", "message": "Registration completed!"})
+            return jsonify({
+                "status": "success",
+                "message": "Registration completed!"
+            })
 
-        return jsonify({"status": "capturing", "captured": captured, "total": TOTAL_PHOTOS})
+        return jsonify({
+            "status": "capturing",
+            "captured": captured,
+            "total": TOTAL_PHOTOS
+        })
 
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
 
 @app.route('/cancel_registration', methods=['POST'])
 def cancel_registration():
@@ -108,6 +140,7 @@ def cancel_registration():
     except Exception:
         return jsonify({"status": "error"})
 
+
 # ====================== LIVE ATTENDANCE ======================
 @app.route('/load_embeddings', methods=['POST'])
 def load_embeddings():
@@ -117,6 +150,7 @@ def load_embeddings():
         return jsonify({"status": "success", "count": len(embeddings_list)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
 
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
@@ -140,11 +174,15 @@ def process_frame():
             if embedding is None:
                 continue
 
-            person_id, score = matcher.find_match(embedding, threshold=0.65)
+            person_id, score = matcher.find_match(
+                embedding, threshold=0.65
+            )
 
             if person_id:
                 now = datetime.now()
-                status = "Late" if (now.hour > 9) or (now.hour == 9 and now.minute > 0) else "Present"
+                status = "Late" if (now.hour > 9) or (
+                    now.hour == 9 and now.minute > 0
+                ) else "Present"
                 marked = mark_attendance(person_id, status, score)
 
                 person = get_person_by_id(person_id)
@@ -169,9 +207,11 @@ def process_frame():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+
 @app.route('/get_today_attendance')
 def get_today_attendance_route():
     return jsonify(get_todays_attendance())
+
 
 # ====================== DELETE ======================
 @app.route('/delete_person', methods=['POST'])
@@ -181,38 +221,48 @@ def delete_person():
             employee_id = request.get_json().get('employee_id')
         else:
             employee_id = request.form.get('employee_id')
+
         if delete_person_by_employee_id(employee_id):
             return jsonify({"status": "success"})
         return jsonify({"status": "error", "message": "Person not found"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+
 # ====================== EXPORT ======================
 @app.route('/export_csv')
 def export_csv():
     records = get_attendance_records()
     df = pd.DataFrame([{
-        'Name': r['name'], 'Employee ID': r['employee_id'],
-        'Department': r['department'], 'Date': r['date'],
-        'Time': r['time'], 'Status': r['status'],
+        'Name': r['name'],
+        'Employee ID': r['employee_id'],
+        'Department': r['department'],
+        'Date': r['date'],
+        'Time': r['time'],
+        'Status': r['status'],
         'Confidence': r['confidence_score']
     } for r in records])
     csv_path = "attendance_records.csv"
     df.to_csv(csv_path, index=False)
     return send_file(csv_path, as_attachment=True)
 
+
 @app.route('/export_excel')
 def export_excel():
     records = get_attendance_records()
     df = pd.DataFrame([{
-        'Name': r['name'], 'Employee ID': r['employee_id'],
-        'Department': r['department'], 'Date': r['date'],
-        'Time': r['time'], 'Status': r['status'],
+        'Name': r['name'],
+        'Employee ID': r['employee_id'],
+        'Department': r['department'],
+        'Date': r['date'],
+        'Time': r['time'],
+        'Status': r['status'],
         'Confidence': r['confidence_score']
     } for r in records])
     excel_path = "attendance_records.xlsx"
     df.to_excel(excel_path, index=False)
     return send_file(excel_path, as_attachment=True)
+
 
 # ====================== STARTUP ======================
 if __name__ == '__main__':
