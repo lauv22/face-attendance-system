@@ -11,36 +11,36 @@
     <div class="col-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fa-solid fa-users" style="color:#38bdf8;"></i>
+                <i class="fa-solid fa-users" style="color:#6366f1;"></i>
             </div>
-            <div class="stat-value" style="color:#f1f5f9;">{{ stats.total_registered }}</div>
+            <div class="stat-value">{{ stats.total_registered }}</div>
             <div class="stat-label">Total Registered</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fa-solid fa-circle-check" style="color:#34d399;"></i>
+                <i class="fa-solid fa-circle-check" style="color:#22c55e;"></i>
             </div>
-            <div class="stat-value" style="color:#34d399;">{{ stats.present_today }}</div>
+            <div class="stat-value" style="color:#22c55e;">{{ stats.present_today }}</div>
             <div class="stat-label">Present Today</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fa-solid fa-clock" style="color:#fbbf24;"></i>
+                <i class="fa-solid fa-clock" style="color:#f59e0b;"></i>
             </div>
-            <div class="stat-value" style="color:#fbbf24;">{{ stats.late_today }}</div>
+            <div class="stat-value" style="color:#f59e0b;">{{ stats.late_today }}</div>
             <div class="stat-label">Late Today</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fa-solid fa-user-slash" style="color:#f87171;"></i>
+                <i class="fa-solid fa-user-slash" style="color:#ef4444;"></i>
             </div>
-            <div class="stat-value" style="color:#f87171;">
+            <div class="stat-value" style="color:#ef4444;">
                 {{ stats.total_registered - stats.present_today - stats.late_today }}
             </div>
             <div class="stat-label">Absent Today</div>
@@ -51,7 +51,7 @@
 <div class="table-card">
     <div class="table-card-head">
         <span class="table-card-title">
-            <i class="fa-solid fa-clock-rotate-left me-2" style="color:#38bdf8;"></i>
+            <i class="fa-solid fa-clock-rotate-left me-2" style="color:#6366f1;"></i>
             Recent Activity
         </span>
         <a href="/records" class="btn-ghost" style="font-size:13px; padding:6px 14px;">
@@ -73,10 +73,10 @@
                 <td>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div class="avatar">{{ row.name[0].upper() }}</div>
-                        <span style="font-weight:600; color:#f1f5f9;">{{ row.name }}</span>
+                        <span style="font-weight:600; color:var(--text-1);">{{ row.name }}</span>
                     </div>
                 </td>
-                <td style="font-size:13px; color:#475569;">{{ row.time }}</td>
+                <td style="font-size:13px; color:var(--text-3);">{{ row.time }}</td>
                 <td>
                     <span class="pill
                         {% if row.status=='Present' %}pill-green
@@ -85,13 +85,13 @@
                         {{ row.status }}
                     </span>
                 </td>
-                <td style="font-size:13px; color:#475569;">
+                <td style="font-size:13px; color:var(--text-3);">
                     {% if row.confidence_score %}{{ "%.1f"|format(row.confidence_score*100) }}%{% else %}—{% endif %}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" style="text-align:center; padding:50px; color:#475569;">
+                <td colspan="4" style="text-align:center; padding:50px; color:var(--text-3);">
                     <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
                     No attendance records yet today
                 </td>
