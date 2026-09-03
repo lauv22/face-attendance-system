@@ -1,1 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Registered Persons — FaceTrack{% endblock %}
 
+{% block content %}
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between;">
+    <div>
+        <h1>Registered Persons</h1>
+        <p>{{ persons|length }} people enrolled in the system.</p>
+    </div>
+    <a href="/register" class="btn-primary-app">
+        <i class="fa-solid fa-user-plus"></i> Register New
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-card-head">
+        <span class="table-card-title">
+            <i class="fa-solid fa-users me-2" style="color:var(--primary);"></i>
+            All Enrolled Persons
+        </span>
+        <span style="font-size:13px; color:var(--text-3);">
+            {{ persons|length }} total
+        </span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Person</th>
+                <th>Employee ID</th>
+                <th>Department</th>
+                <th>Registered On</th>
+                <th style="text-align:right;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in persons %}
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar">{{ p.name[0].upper() }}</div>
+                        <span style="font-weight:600; color:var(--text-1);">{{ p.name }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-family:monospace; font-size:13px;
+                                 background:var(--surface-2); padding:3px 8px;
+                                 border-radius:5px; border:1px solid var(--border);">
+                        {{ p.employee_id }}
+                    </span>
+                </td>
+                <td style="color:var(--text-2); font-size:14px;">{{ p.department }}</td>
+                <td style="font-size:13px; color:var(--text-3);">
+                    {{ p.created_at.strftime('%Y-%m-%d') }}
+                </td>
+                <td style="text-align:right;">
+                    <button class="btn-danger-soft"
+                            onclick="deletePerson('{{ p.employee_id }}', '{{ p.name }}')">
+                        <i class="fa-solid fa-trash-can me-1"></i> Delete
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align:center; padding:60px; color:var(--text-3);">
+                    <i class="fa-solid fa-users-slash fa-3x d-block mb-3" style="color:var(--border);"></i>
+                    <p style="font-size:15px; font-weight:500; margin-bottom:10px;">No persons registered yet</p>
+                    <a href="/register" class="btn-primary-app" style="font-size:13px; padding:8px 16px;">
+                        <i class="fa-solid fa-user-plus"></i> Register First Person
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function deletePerson(employeeId, name) {
+    if (!confirm(`Delete ${name} and all their data? This cannot be undone.`)) return;
+
+    try {
+        const res = await fetch('/delete_person', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_id: employeeId })
+        });
+
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            alert(`✅ ${name} deleted successfully!`);
+            location.reload();
+        } else {
+            alert(`❌ Error: ${data.message}`);
+        }
+    } catch (err) {
+        alert('❌ Network error. Please try again.');
+    }
+}
+</script>
+{% endblock %}
